@@ -18,14 +18,19 @@ namespace LobbyCommands
         public GameEventListener(ILogger<LobbyCommandsPlugin> logger) => _logger = logger;
 
         [EventListener]
-        public async ValueTask OnPlayerChat(IPlayerChatEvent e)
+        public void OnPlayerChat(IPlayerChatEvent e)
         {
             if (e.Game.GameState != GameStates.NotStarted || !e.Message.StartsWith("/") || !e.ClientPlayer.IsHost)
                 return;
 
-            _logger.LogInformation($"Attempting to evaluate command from {e.PlayerControl.PlayerInfo.PlayerName} on {e.Game.Code.Code}. Message was: {e.Message}");
+            Task.Run(async () => await DoCommands(e));
+        }
 
-            string[] parts = e.Message[1..].Split(" ");
+        private async Task DoCommands(IPlayerChatEvent e)
+        {
+            _logger.LogDebug($"Attempting to evaluate command from {e.PlayerControl.PlayerInfo.PlayerName} on {e.Game.Code.Code}. Message was: {e.Message}");
+
+            string[] parts = e.Message.ToLowerInvariant()[1..].Split(" ");
 
             switch (parts[0])
             {
@@ -55,12 +60,12 @@ namespace LobbyCommands
                         return;
                     }
 
-                    if (!_mapNames.Any(name => name.ToUpperInvariant() == parts[1].ToUpperInvariant()))
+                    if (!_mapNames.Any(name => name.ToLowerInvariant() == parts[1]))
                     {
                         await e.PlayerControl.SendChatAsync($"Unknown map. Accepted values: {string.Join(", ", _mapNames)}");
                         return;
                     }
-                    
+
                     MapTypes map = Enum.Parse<MapTypes>(parts[1], true);
 
                     await e.PlayerControl.SendChatAsync($"Setting map to {map}");

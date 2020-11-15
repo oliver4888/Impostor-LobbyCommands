@@ -12,7 +12,7 @@ namespace LobbyCommands
         package: "uk.ol48.lobbycommands",
         name: "Lobby Commands",
         author: "oliver4888",
-        version: "1.0.0")]
+        version: "1.0.1")]
     public class LobbyCommandsPlugin : PluginBase
     {
         readonly ILogger<LobbyCommandsPlugin> _logger;
